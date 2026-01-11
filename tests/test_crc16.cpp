@@ -34,8 +34,8 @@ TEST_F(CRC16Test, KnownPacket) {
 
     uint16_t crc = CRC16::calculate(data);
 
-    // Known CRC for this packet: 0x840A
-    EXPECT_EQ(crc, 0x840A);
+    // Known CRC for this packet (native): 0x0A84 (LE wire: 84 0A)
+    EXPECT_EQ(crc, 0x0A84);
 }
 
 // Test CRC verification
