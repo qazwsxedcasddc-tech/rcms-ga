@@ -1,0 +1,20 @@
+{
+    "pollingInterval": 1000,
+    "soundEnabled": true,
+    "devices": [
+        {
+            "name": "Фазан-19 #1",
+            "type": "fazan19",
+            "address": 1,
+            "port": "/dev/ttyUSB0",
+            "baudRate": 9600,
+            "pollingInterval": 1000
+        }
+    ],
+    "logging": {
+        "level": "info",
+        "file": "rcms-ga.log",
+        "maxSize": 5242880,
+        "maxFiles": 3
+    }
+}
