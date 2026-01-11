@@ -118,15 +118,39 @@ if(BUILD_TESTS)
     enable_testing()
     find_package(GTest REQUIRED)
 
+    # Эмулятор как библиотека для тестов
+    add_library(fazan19_emulator STATIC
+        tests/emulator/Fazan19Emulator.cpp
+        tests/emulator/Fazan19Emulator.h
+    )
+    target_include_directories(fazan19_emulator PUBLIC
+        ${CMAKE_SOURCE_DIR}/tests
+        ${CMAKE_SOURCE_DIR}/src
+    )
+
+    # CRC тесты
     add_executable(test_crc16 tests/test_crc16.cpp src/comm/CRC16.cpp)
     target_link_libraries(test_crc16 GTest::GTest GTest::Main)
     target_include_directories(test_crc16 PRIVATE ${CMAKE_SOURCE_DIR}/src)
     add_test(NAME test_crc16 COMMAND test_crc16)
 
+    # Тесты частотного кодирования
     add_executable(test_frequency tests/test_frequency.cpp)
     target_link_libraries(test_frequency GTest::GTest GTest::Main)
     target_include_directories(test_frequency PRIVATE ${CMAKE_SOURCE_DIR}/src)
     add_test(NAME test_frequency COMMAND test_frequency)
+
+    # Тесты эмулятора
+    add_executable(test_emulator tests/test_emulator.cpp)
+    target_link_libraries(test_emulator GTest::GTest GTest::Main fazan19_emulator)
+    target_include_directories(test_emulator PRIVATE ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/tests)
+    add_test(NAME test_emulator COMMAND test_emulator)
+
+    # Интеграционные тесты протокола
+    add_executable(test_protocol tests/test_protocol.cpp src/comm/CRC16.cpp)
+    target_link_libraries(test_protocol GTest::GTest GTest::Main fazan19_emulator)
+    target_include_directories(test_protocol PRIVATE ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/tests)
+    add_test(NAME test_protocol COMMAND test_protocol)
 endif()
 
 # Установка

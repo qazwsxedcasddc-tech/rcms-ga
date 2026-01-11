@@ -1,0 +1,82 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [ master, main, develop ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          qtbase5-dev \
+          libqt5serialport5-dev \
+          libspdlog-dev \
+          nlohmann-json3-dev \
+          libsqlite3-dev \
+          libgtest-dev
+
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON
+
+    - name: Build
+      run: cmake --build build --parallel $(nproc)
+
+    - name: Run unit tests
+      run: |
+        cd build
+        ctest --output-on-failure --verbose
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: rcms-ga-linux
+        path: build/rcms-ga
+        if-no-files-found: warn
+
+  # Статический анализ кода
+  static-analysis:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install cppcheck
+      run: sudo apt-get install -y cppcheck
+
+    - name: Run cppcheck
+      run: |
+        cppcheck --enable=warning,style,performance \
+                 --suppress=missingIncludeSystem \
+                 --error-exitcode=0 \
+                 --inline-suppr \
+                 -I src \
+                 src/
+
+  # Проверка форматирования (опционально)
+  format-check:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check line endings
+      run: |
+        if git grep -l $'\r' -- '*.cpp' '*.h'; then
+          echo "Found Windows line endings in source files!"
+          exit 1
+        fi
+        echo "Line endings OK"
