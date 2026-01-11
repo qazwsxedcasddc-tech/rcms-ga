@@ -8,6 +8,7 @@
 #include "core/Logger.h"
 
 #include <QMenuBar>
+#include <QVBoxLayout>
 #include <QToolBar>
 #include <QStatusBar>
 #include <QSplitter>
