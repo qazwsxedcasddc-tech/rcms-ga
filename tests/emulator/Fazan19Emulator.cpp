@@ -1,5 +1,6 @@
 #include "Fazan19Emulator.h"
 #include <cmath>
+#include <cstring>
 #include <thread>
 #include <chrono>
 
