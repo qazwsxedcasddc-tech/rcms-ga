@@ -24,20 +24,20 @@ constexpr uint16_t MR2 = 0x04;      // Mode register 2
 constexpr uint16_t FRRS = 0x05;     // Frequency + KF coefficient
 
 // ADC channels (analog readings)
-constexpr uint16_t AD0 = 0x09;      // ADC channel 0
-constexpr uint16_t AD1 = 0x0A;      // ADC channel 1
-constexpr uint16_t AD2 = 0x0B;      // ADC channel 2
-constexpr uint16_t AD3 = 0x0C;      // ADC channel 3
-constexpr uint16_t AD4 = 0x0D;      // ADC channel 4
-constexpr uint16_t AD5 = 0x0E;      // ADC channel 5
-constexpr uint16_t AD6 = 0x0F;      // ADC channel 6
-constexpr uint16_t AD7 = 0x10;      // ADC channel 7
+constexpr uint16_t AD0 = 0x0C;      // ADC channel 0 (voltage)
+constexpr uint16_t AD1 = 0x0D;      // ADC channel 1 (temperature)
+constexpr uint16_t AD2 = 0x0E;      // ADC channel 2 (signal level)
+constexpr uint16_t AD3 = 0x0F;      // ADC channel 3
+constexpr uint16_t AD4 = 0x10;      // ADC channel 4
+constexpr uint16_t AD5 = 0x11;      // ADC channel 5
+constexpr uint16_t AD6 = 0x12;      // ADC channel 6
+constexpr uint16_t AD7 = 0x13;      // ADC channel 7
 
 // Error/diagnostic registers
-constexpr uint16_t DV1 = 0x16;      // Error register 1
-constexpr uint16_t DV2 = 0x17;      // Error register 2
-constexpr uint16_t DV3 = 0x18;      // Error register 3
-constexpr uint16_t DV4 = 0x19;      // Error register 4
+constexpr uint16_t DV1 = 0x18;      // Error register 1
+constexpr uint16_t DV2 = 0x19;      // Error register 2
+constexpr uint16_t DV3 = 0x1A;      // Error register 3
+constexpr uint16_t DV4 = 0x1B;      // Error register 4
 
 // Total number of registers to read
 constexpr uint16_t TOTAL_REGISTERS = 0x1C; // 28 registers
@@ -47,9 +47,28 @@ constexpr uint16_t TOTAL_REGISTERS = 0x1C; // 28 registers
 /**
  * @brief MR1 register bit definitions
  */
-namespace mr1_bits {
-constexpr uint16_t SQUELCH_ENABLED = (1 << 7);   // Bit 7: Noise suppressor ON/OFF
-// TODO: Add other bits from documentation
+namespace modes {
+constexpr uint16_t MR1_TX = 0x0001;              // Bit 0: Transmitting
+constexpr uint16_t MR1_SQUELCH = 0x0080;         // Bit 7: Squelch enabled
+constexpr uint16_t MR1_REMOTE = 0x0100;          // Bit 8: Remote mode
+constexpr uint16_t MR1_DATA_MODE = 0x0200;       // Bit 9: Data mode (vs voice)
+constexpr uint16_t MR1_4WIRE = 0x0400;           // Bit 10: 4-wire mode
+}
+
+/**
+ * @brief Error bit definitions for DV1-DV4 registers
+ */
+namespace errors {
+// DV1 - Critical errors
+constexpr uint16_t DV1_POWER_FAIL = 0x0001;     // Power supply failure
+constexpr uint16_t DV1_PLL_UNLOCK = 0x0002;     // PLL unlocked
+constexpr uint16_t DV1_PA_FAIL = 0x0004;        // Power amplifier failure
+constexpr uint16_t DV1_VSWR_HIGH = 0x0008;      // VSWR too high
+constexpr uint16_t DV1_TEMP_HIGH = 0x0010;      // Overtemperature
+
+// DV2 - Secondary errors
+constexpr uint16_t DV2_RX_FAIL = 0x0001;        // Receiver failure
+constexpr uint16_t DV2_BATTERY_LOW = 0x0002;    // Low battery
 }
 
 /**
@@ -63,6 +82,15 @@ constexpr double MAX_MHZ = 136.975;             // Maximum frequency
 constexpr uint16_t F12_MASK = 0x1FFF;           // 13-bit frequency value mask
 constexpr uint8_t KF_SHIFT = 13;                // KF coefficient bit position
 constexpr uint8_t KF_MASK = 0x03;               // 2-bit KF mask
+}
+
+/**
+ * @brief Timing constants
+ */
+namespace timing {
+constexpr int RESPONSE_TIMEOUT_MS = 2000;       // Response timeout
+constexpr int RETRY_COUNT = 3;                  // Retry count
+constexpr int POLL_INTERVAL_MS = 1000;          // Default poll interval
 }
 
 /**
@@ -93,16 +121,6 @@ constexpr int DEFAULT_BAUD_RATE = 9600;
 constexpr int DATA_BITS = 8;
 constexpr int STOP_BITS = 1;
 constexpr char PARITY = 'N';
-constexpr int TIMEOUT_MS = 2000;
-constexpr int RETRY_COUNT = 3;
-}
-
-/**
- * @brief Error codes from DV1-DV4 registers
- */
-namespace error_codes {
-constexpr uint16_t NO_ERROR = 0x0000;
-// TODO: Add specific error codes from documentation
 }
 
 } // namespace fazan19

@@ -101,6 +101,11 @@ bool Fazan19Device::readAlarms(QVector<AlarmInfo>& alarms) {
     return true;
 }
 
+bool Fazan19Device::getFrequency(double& freqMHz) {
+    freqMHz = m_currentFrequency;
+    return true;
+}
+
 bool Fazan19Device::setFrequency(double freqMHz) {
     // Validate frequency range (118.000 - 136.975 MHz)
     if (freqMHz < frequency::MIN_MHZ || freqMHz > frequency::MAX_MHZ) {

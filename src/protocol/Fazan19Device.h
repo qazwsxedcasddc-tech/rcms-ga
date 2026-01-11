@@ -23,6 +23,7 @@ public:
     QString deviceType() const override { return "Фазан-19 П5"; }
     QString deviceId() const override { return m_deviceId; }
     uint8_t modbusAddress() const override { return m_address; }
+    void setModbusAddress(uint8_t address) override { m_address = address; }
 
     bool open(const QString& portName, int baudRate = 9600) override;
     void close() override;
@@ -32,10 +33,12 @@ public:
     bool readAlarms(QVector<AlarmInfo>& alarms) override;
 
     bool setFrequency(double freqMHz) override;
+    bool getFrequency(double& freqMHz) override;
     bool setSquelch(bool enabled, int level = 5) override;
     bool setPTT(bool enabled) override;
 
     bool runSelfTest() override;
+    QString lastError() const override { return m_lastError; }
 
     /**
      * @brief Read all registers from device
@@ -69,6 +72,7 @@ private:
 
     uint8_t m_address;
     QString m_deviceId;
+    QString m_lastError;
     std::unique_ptr<QSerialPort> m_port;
     std::unique_ptr<ModbusRTU> m_modbus;
 

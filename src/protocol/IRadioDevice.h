@@ -6,6 +6,16 @@
 #include <cstdint>
 
 namespace rcms {
+/**
+ * @brief Alarm severity levels
+ */
+enum class AlarmSeverity {
+    Info,
+    Warning,
+    Error,
+    Critical
+};
+
 
 /**
  * @brief Device status structure
@@ -37,7 +47,7 @@ struct AlarmInfo {
     uint8_t deviceAddress;
     QString deviceName;
     uint16_t code;
-    QString severity;       // "INFO", "WARN", "ERROR", "CRITICAL"
+    AlarmSeverity severity = AlarmSeverity::Info;       // "INFO", "WARN", "ERROR", "CRITICAL"
     QString message;
     bool acknowledged = false;
 };
