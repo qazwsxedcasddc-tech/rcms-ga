@@ -131,32 +131,33 @@ TEST_F(ProtocolTest, ModeRegisterBits) {
     emulator.setTransmitting(false);
     emulator.setSquelchOpen(true);
 
-    auto request = buildReadRequest(1, fazan19::registers::MR1, 1);
+    // Use ModTR register (0x02 per РЭ)
+    auto request = buildReadRequest(1, fazan19::registers::ModTR, 1);
     auto response = emulator.processRequest(request);
 
     std::vector<uint16_t> values;
     ASSERT_TRUE(parseReadResponse(response, values));
 
-    uint16_t mr1 = values[0];
-    EXPECT_TRUE(mr1 & fazan19::modes::MR1_REMOTE);
-    EXPECT_FALSE(mr1 & fazan19::modes::MR1_TX);
-    EXPECT_TRUE(mr1 & fazan19::modes::MR1_SQUELCH);
+    uint16_t modtr = values[0];
+    EXPECT_TRUE(modtr & fazan19::modes::MR1_REMOTE);
+    EXPECT_FALSE(modtr & fazan19::modes::MR1_TX);
+    EXPECT_TRUE(modtr & fazan19::modes::MR1_SQUELCH);
 }
 
 // Test operating hours register
 TEST_F(ProtocolTest, OperatingHoursRegister) {
-    uint32_t testHours = 98765;
+    // Per РЭ, operating hours is a single 16-bit register (max 65535)
+    uint16_t testHours = 12345;
     emulator.setOperatingHours(testHours);
 
-    auto request = buildReadRequest(1, fazan19::registers::CW1, 2);
+    auto request = buildReadRequest(1, fazan19::registers::CountWork, 1);
     auto response = emulator.processRequest(request);
 
     std::vector<uint16_t> values;
     ASSERT_TRUE(parseReadResponse(response, values));
-    ASSERT_EQ(values.size(), 2);
+    ASSERT_EQ(values.size(), 1);
 
-    uint32_t hours = (static_cast<uint32_t>(values[0]) << 16) | values[1];
-    EXPECT_EQ(hours, testHours);
+    EXPECT_EQ(values[0], testHours);
 }
 
 // Test error detection
@@ -182,14 +183,15 @@ TEST_F(ProtocolTest, ErrorRegisters) {
 // Test all 8.33 kHz channels
 TEST_F(ProtocolTest, Channel833Spacing) {
     // Test that adjacent channels differ by exactly 1 in register value
-    double freq1 = 118.000;
-    double freq2 = 118.000 + 0.00833;  // +8.33 kHz
+    // Using frequency well within the range (100-149.975 MHz per РЭ)
+    double freq1 = 121.500;  // Emergency frequency
+    double freq2 = 121.500 + (8.33333 / 1000.0);  // +8.33 kHz
 
     emulator.setFrequency(freq1);
-    uint16_t reg1 = emulator.getRegister(fazan19::registers::FRRS) & 0x1FFF;
+    uint16_t reg1 = emulator.getRegister(fazan19::registers::FrRS) & 0x1FFF;
 
     emulator.setFrequency(freq2);
-    uint16_t reg2 = emulator.getRegister(fazan19::registers::FRRS) & 0x1FFF;
+    uint16_t reg2 = emulator.getRegister(fazan19::registers::FrRS) & 0x1FFF;
 
     EXPECT_EQ(reg2 - reg1, 1);
 }

@@ -7,20 +7,26 @@
 namespace rcms {
 namespace test {
 
-// Register addresses (matching Fazan19Registers.h)
+// Register addresses (matching Fazan19Registers.h per РЭ)
 namespace reg {
-    constexpr uint16_t CW1 = 0x00;      // Operating hours high
-    constexpr uint16_t CW2 = 0x01;      // Operating hours low
-    constexpr uint16_t MR1 = 0x03;      // Mode register 1
-    constexpr uint16_t MR2 = 0x04;      // Mode register 2
-    constexpr uint16_t FRRS = 0x05;     // Frequency + KF
-    constexpr uint16_t AD0 = 0x0C;      // ADC channel 0 (voltage)
-    constexpr uint16_t AD1 = 0x0D;      // ADC channel 1 (temperature)
-    constexpr uint16_t AD2 = 0x0E;      // ADC channel 2 (signal level)
-    constexpr uint16_t DV1 = 0x18;      // Error register 1
-    constexpr uint16_t DV2 = 0x19;      // Error register 2
-    constexpr uint16_t DV3 = 0x1A;      // Error register 3
-    constexpr uint16_t DV4 = 0x1B;      // Error register 4
+    constexpr uint16_t CountWork = 0x00;  // Operating hours (single 16-bit)
+    constexpr uint16_t Cntr = 0x01;       // Request counter
+    constexpr uint16_t ModTR = 0x02;      // Mode register (TX/RX, power)
+    constexpr uint16_t FrRS = 0x03;       // Frequency + KF coefficient
+    constexpr uint16_t PKm = 0x04;        // Power level
+    constexpr uint16_t AD0 = 0x10;        // ADC channel 0 (voltage)
+    constexpr uint16_t AD1 = 0x11;        // ADC channel 1 (temperature)
+    constexpr uint16_t AD2 = 0x12;        // ADC channel 2 (signal level)
+    constexpr uint16_t DiagVUU = 0x18;    // Diagnostic register (8 bytes)
+
+    // Legacy aliases for backward compatibility
+    constexpr uint16_t CW1 = CountWork;
+    constexpr uint16_t MR1 = ModTR;
+    constexpr uint16_t FRRS = FrRS;
+    constexpr uint16_t DV1 = DiagVUU;
+    constexpr uint16_t DV2 = DiagVUU + 1;
+    constexpr uint16_t DV3 = DiagVUU + 2;
+    constexpr uint16_t DV4 = DiagVUU + 3;
 }
 
 // Mode register bits
@@ -251,8 +257,11 @@ double Fazan19Emulator::getFrequency() const {
 }
 
 void Fazan19Emulator::setOperatingHours(uint32_t hours) {
-    m_registers[reg::CW1] = static_cast<uint16_t>(hours >> 16);
-    m_registers[reg::CW2] = static_cast<uint16_t>(hours & 0xFFFF);
+    // Per РЭ, operating hours is stored in a single 16-bit register
+    // If hours exceed 16-bit max, saturate at 65535
+    m_registers[reg::CountWork] = static_cast<uint16_t>(
+        hours > 65535 ? 65535 : hours
+    );
 }
 
 void Fazan19Emulator::setError(uint16_t dv1, uint16_t dv2, uint16_t dv3, uint16_t dv4) {
