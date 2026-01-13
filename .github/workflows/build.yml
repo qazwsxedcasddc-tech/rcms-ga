@@ -25,7 +25,8 @@ jobs:
           libspdlog-dev \
           nlohmann-json3-dev \
           libsqlite3-dev \
-          libgtest-dev
+          libgtest-dev \
+          libxcb-xinerama0
 
     - name: Configure CMake
       run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON
@@ -38,11 +39,58 @@ jobs:
         cd build
         ctest --output-on-failure --verbose
 
-    - name: Upload build artifacts
+    - name: Upload Linux binary
       uses: actions/upload-artifact@v4
       with:
-        name: rcms-ga-linux
+        name: rcms-ga-linux-x64
         path: build/rcms-ga
+        if-no-files-found: warn
+
+  # Windows сборка
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '5.15.2'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_msvc2019_64'
+        modules: 'qtserialport'
+
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Install vcpkg dependencies
+      run: |
+        vcpkg install spdlog:x64-windows nlohmann-json:x64-windows sqlite3:x64-windows
+
+    - name: Configure CMake
+      run: |
+        cmake -B build -G "NMake Makefiles" `
+          -DCMAKE_BUILD_TYPE=Release `
+          -DBUILD_TESTS=OFF `
+          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Deploy Qt DLLs
+      run: |
+        mkdir deploy
+        copy build\rcms-ga.exe deploy\
+        windeployqt --release --no-translations --no-opengl-sw deploy\rcms-ga.exe
+
+    - name: Upload Windows binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: rcms-ga-windows-x64
+        path: deploy/
         if-no-files-found: warn
 
   # Статический анализ кода
