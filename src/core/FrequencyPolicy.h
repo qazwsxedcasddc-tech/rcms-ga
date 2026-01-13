@@ -41,9 +41,10 @@ struct FrequencyValidationResult {
  */
 class FrequencyPolicy {
 public:
-    // Fazan-19 frequency range (per documentation)
-    static constexpr double MIN_FREQ_MHZ = 118.000;
-    static constexpr double MAX_FREQ_MHZ = 136.975;
+    // Fazan-19 frequency range (per РЭ documentation)
+    // Full range: 100 - 149.975 MHz (25 kHz) or 100 - 149.9916 MHz (8.33 kHz)
+    static constexpr double MIN_FREQ_MHZ = 100.000;
+    static constexpr double MAX_FREQ_MHZ = 149.975;
 
     FrequencyPolicy() = default;
 
