@@ -86,10 +86,14 @@ jobs:
     - name: Build
       run: cmake --build build --config Release
 
-    - name: Deploy Qt DLLs
+    - name: Deploy Qt and vcpkg DLLs
       run: |
         mkdir deploy
         copy build\Release\rcms-ga.exe deploy\
+        # Copy vcpkg DLLs (spdlog, fmt)
+        copy $env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\bin\spdlog.dll deploy\
+        copy $env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\bin\fmt.dll deploy\
+        # Copy Qt DLLs
         windeployqt --release --no-translations --no-opengl-sw deploy\rcms-ga.exe
 
     - name: Upload Windows binary
