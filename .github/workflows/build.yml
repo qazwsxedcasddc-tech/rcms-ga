@@ -54,15 +54,18 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v3
+    - name: Setup Python
+      uses: actions/setup-python@v5
       with:
-        version: '5.15.2'
-        host: 'windows'
-        target: 'desktop'
-        arch: 'win64_msvc2019_64'
-        modules: 'qtserialport'
-        cache: true
+        python-version: '3.11'
+
+    - name: Install aqtinstall
+      run: pip install aqtinstall
+
+    - name: Install Qt 5.15.2
+      run: |
+        aqt install-qt windows desktop 5.15.2 win64_msvc2019_64 -m qtserialport --outputdir ${{ github.workspace }}/Qt
+      shell: bash
 
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
@@ -77,9 +80,11 @@ jobs:
 
     - name: Configure CMake
       run: |
+        $env:CMAKE_PREFIX_PATH = "${{ github.workspace }}/Qt/5.15.2/msvc2019_64"
         cmake -B build -G "Visual Studio 17 2022" -A x64 `
           -DCMAKE_BUILD_TYPE=Release `
           -DBUILD_TESTS=OFF `
+          -DCMAKE_PREFIX_PATH="${{ github.workspace }}/Qt/5.15.2/msvc2019_64" `
           -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
 
     - name: Build
@@ -89,6 +94,7 @@ jobs:
       run: |
         mkdir deploy
         copy build\Release\rcms-ga.exe deploy\
+        $env:PATH = "${{ github.workspace }}/Qt/5.15.2/msvc2019_64/bin;$env:PATH"
         windeployqt --release --no-translations --no-opengl-sw deploy\rcms-ga.exe
 
     - name: Upload Windows binary
