@@ -11,13 +11,16 @@ set(CMAKE_AUTOUIC ON)
 option(BUILD_TESTS "Build unit tests" ON)
 option(BUILD_STATIC "Build static binary" OFF)
 
-# Поиск Qt
-find_package(Qt5 REQUIRED COMPONENTS
-    Widgets
-    SerialPort
-    Sql
-    Network
-)
+# Поиск Qt (поддержка Qt5 и Qt6)
+find_package(Qt6 QUIET COMPONENTS Widgets SerialPort Sql Network)
+if(Qt6_FOUND)
+    set(QT_VERSION_MAJOR 6)
+    message(STATUS "Using Qt6")
+else()
+    find_package(Qt5 REQUIRED COMPONENTS Widgets SerialPort Sql Network)
+    set(QT_VERSION_MAJOR 5)
+    message(STATUS "Using Qt5")
+endif()
 
 # Поиск других зависимостей
 find_package(spdlog REQUIRED)
@@ -109,10 +112,10 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    Qt5::Widgets
-    Qt5::SerialPort
-    Qt5::Sql
-    Qt5::Network
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::SerialPort
+    Qt${QT_VERSION_MAJOR}::Sql
+    Qt${QT_VERSION_MAJOR}::Network
     spdlog::spdlog
     nlohmann_json::nlohmann_json
     SQLite::SQLite3
