@@ -94,7 +94,7 @@ TEST_F(EmulatorTest, FrequencyRoundTrip) {
 TEST_F(EmulatorTest, ReadFrequencyRegister) {
     emulator.setFrequency(118.0);
 
-    auto request = makeReadRequest(1, 0x05, 1);  // FrRS register
+    auto request = makeReadRequest(1, 0x03, 1);  // FrRS register at 0x03 per РЭ
     auto response = emulator.processRequest(request);
 
     ASSERT_GE(response.size(), 7);
@@ -114,7 +114,7 @@ TEST_F(EmulatorTest, WriteFrequencyRegister) {
     // f12 = (121.5 - 100) * 1e6 / 8333.33 = 2580
     uint16_t frrs = 2580;
 
-    auto request = makeWriteSingleRequest(1, 0x05, frrs);
+    auto request = makeWriteSingleRequest(1, 0x03, frrs);  // FrRS at 0x03 per РЭ
     auto response = emulator.processRequest(request);
 
     ASSERT_GE(response.size(), 8);
@@ -127,13 +127,11 @@ TEST_F(EmulatorTest, WriteFrequencyRegister) {
 
 // Test operating hours
 TEST_F(EmulatorTest, OperatingHours) {
+    // Per РЭ, operating hours is a single 16-bit register at 0x00 (CountWork)
     emulator.setOperatingHours(12345);
 
-    uint16_t cw1 = emulator.getRegister(0x00);
-    uint16_t cw2 = emulator.getRegister(0x01);
-
-    uint32_t hours = (static_cast<uint32_t>(cw1) << 16) | cw2;
-    EXPECT_EQ(hours, 12345);
+    uint16_t countWork = emulator.getRegister(0x00);
+    EXPECT_EQ(countWork, 12345);
 }
 
 // Test error registers
@@ -154,13 +152,14 @@ TEST_F(EmulatorTest, ModeRegisterBits) {
     emulator.setRemoteMode(true);
     emulator.setTransmitting(true);
 
-    uint16_t mr1 = emulator.getRegister(0x03);
-    EXPECT_TRUE(mr1 & 0x0100);  // Remote mode bit
-    EXPECT_TRUE(mr1 & 0x0001);  // TX bit
+    // ModTR is at 0x02 per РЭ
+    uint16_t modtr = emulator.getRegister(0x02);
+    EXPECT_TRUE(modtr & 0x0100);  // Remote mode bit
+    EXPECT_TRUE(modtr & 0x0001);  // TX bit
 
     emulator.setTransmitting(false);
-    mr1 = emulator.getRegister(0x03);
-    EXPECT_FALSE(mr1 & 0x0001);  // TX bit cleared
+    modtr = emulator.getRegister(0x02);
+    EXPECT_FALSE(modtr & 0x0001);  // TX bit cleared
 }
 
 // Test offline device
