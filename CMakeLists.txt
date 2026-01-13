@@ -16,6 +16,7 @@ find_package(Qt5 REQUIRED COMPONENTS
     Widgets
     SerialPort
     Sql
+    Network
 )
 
 # Поиск других зависимостей
@@ -32,6 +33,7 @@ set(SOURCES
     src/core/AlarmManager.cpp
     src/core/ConfigManager.cpp
     src/core/Logger.cpp
+    src/core/ConnectionProfile.cpp
 
     # Protocol
     src/protocol/ModbusRTU.cpp
@@ -40,6 +42,8 @@ set(SOURCES
     # Communication
     src/comm/SerialPort.cpp
     src/comm/CRC16.cpp
+    src/comm/ComTransport.cpp
+    src/comm/TcpSerialTransport.cpp
 
     # GUI
     src/gui/MainWindow.cpp
@@ -56,6 +60,10 @@ set(HEADERS
     src/core/AlarmManager.h
     src/core/ConfigManager.h
     src/core/Logger.h
+    src/core/ConnectionProfile.h
+    src/core/DeviceMetadata.h
+    src/core/DeviceGroup.h
+    src/core/FrequencyPolicy.h
 
     # Protocol
     src/protocol/IRadioDevice.h
@@ -64,8 +72,11 @@ set(HEADERS
     src/protocol/Fazan19Registers.h
 
     # Communication
+    src/comm/ITransport.h
     src/comm/SerialPort.h
     src/comm/CRC16.h
+    src/comm/ComTransport.h
+    src/comm/TcpSerialTransport.h
 
     # GUI
     src/gui/MainWindow.h
@@ -101,6 +112,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt5::Widgets
     Qt5::SerialPort
     Qt5::Sql
+    Qt5::Network
     spdlog::spdlog
     nlohmann_json::nlohmann_json
     SQLite::SQLite3
