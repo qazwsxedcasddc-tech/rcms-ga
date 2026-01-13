@@ -64,9 +64,9 @@ bool Fazan19Device::readStatus(DeviceStatus& status) {
 
     status.online = true;
 
-    // Operating hours (32-bit from CW1 + CW2)
-    m_operatingHours = (static_cast<uint32_t>(regs[registers::CW1]) << 16) |
-                        regs[registers::CW2];
+    // Operating hours (from CountWork register per РЭ)
+    // Note: Per РЭ documentation, CountWork is a single 16-bit register
+    m_operatingHours = regs[registers::CountWork];
     status.operatingHours = m_operatingHours;
 
     // Frequency
